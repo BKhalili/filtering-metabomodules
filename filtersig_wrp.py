@@ -127,8 +127,10 @@ def make_dataframe(metabolites,cas,scoreadj_dict,score_dict,ps_dict,allmethod,so
 	#df.to_csv(source_dir+'/df_'+allmethod+'.tsv',sep='\t')	
 	return df
 
-def main(dirs,z_score_threshold,adj_score_threshold,redo_flag):   
+def main(z_score_threshold,adj_score_threshold,redo_flag):   
 	print("\nThe threshold z-score for filtering is:",z_score_threshold,"\nThe threshold adjusted score for filtering is:",adj_score_threshold,"\n")
+	dirs=[]
+	dirs=glob.glob('ps.*')
 	source_dir=os.getcwd() 
 	if redo_flag:
 		Redo(source_dir)
@@ -235,15 +237,13 @@ def main(dirs,z_score_threshold,adj_score_threshold,redo_flag):
 
 
 if __name__ == '__main__':
-	dirs=[]
-	dirs=glob.glob('ps.*')
 	usage = "usage: %prog [optional] arg"
 	parser = OptionParser(usage)
 	parser.add_option('-r','--redo',dest='redo_flag',default=False)
 	parser.add_option('-z','--zscore',dest='z_score_threshold',type='float',default=4)
 	parser.add_option('-s','--adjscore',dest='adj_score_threshold',type='float',default=2)
 	(options, args) = parser.parse_args()
-	main(dirs,options.z_score_threshold,options.adj_score_threshold,options.redo_flag)
+	main(options.z_score_threshold,options.adj_score_threshold,options.redo_flag)
 
 
 
