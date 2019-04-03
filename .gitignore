@@ -1,2 +1,4 @@
 .DS_Store
-*.tsv
+./__pycache__
+./ps*
+./Original

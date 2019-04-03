@@ -53,7 +53,7 @@ def make_newps(scoreadj_dict,scores_dict,shifts,ps_dict,ps_method,adj_score_thre
 			newps.append(ps_dict[key])
 			newheaders.append(ps_method+'/'+key)		
 	newps=np.array(newps)
-	print(newps)
+	#print(newps)
 	return (newps,newheaders)
 
 def make_dataframe(metabolites,cas,scoreadj_dict,score_dict,ps_dict,allmethod,source_dir):
@@ -127,8 +127,9 @@ def make_dataframe(metabolites,cas,scoreadj_dict,score_dict,ps_dict,allmethod,so
 	#df.to_csv(source_dir+'/df_'+allmethod+'.tsv',sep='\t')	
 	return df
 
-def main(dirs,z_score_threshold,adj_score_threshold,redo_flag):   
-
+def main(z_score_threshold,adj_score_threshold,redo_flag):   
+	dirs=[]
+	dirs=glob.glob('ps.*')
 	print("\nThe threshold z-score for filtering is:",z_score_threshold,"\nThe threshold adjusted score for filtering is:",adj_score_threshold,"\n")
 	print(dirs)
 	source_dir=os.getcwd() 
@@ -242,9 +243,7 @@ if __name__ == '__main__':
 	parser.add_option('-z','--zscore',dest='z_score_threshold',type='float',default=4)
 	parser.add_option('-s','--adjscore',dest='adj_score_threshold',type='float',default=2)
 	(options, args) = parser.parse_args()
-	dirs=[]
-	dirs=glob.glob('ps.*')
-	main(dirs,options.z_score_threshold,options.adj_score_threshold,options.redo_flag)
+	main(options.z_score_threshold,options.adj_score_threshold,options.redo_flag)
 
 
 

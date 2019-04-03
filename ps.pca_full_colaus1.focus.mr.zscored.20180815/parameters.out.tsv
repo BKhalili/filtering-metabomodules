@@ -1,0 +1,16 @@
+dir_source	ps.pca_full_colaus1.focus.mr.zscored.20180815
+reference	umdb
+dsh	0.025
+significant	4
+suggestive	3
+nshow	16
+variant	pm
+n_permutation	9999
+mode	peak
+scoring	chisq
+decorr_lambda	1
+n_show	8
+multi	ps.pca_colaus1.focus.mr.zscored.20180815.pseudospectrum.tsv
+pstype	pca
+plot_type	z
+pmkeeporig	
