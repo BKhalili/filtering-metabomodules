@@ -51,9 +51,9 @@ def make_newps(scoreadj_dict,scores_dict,shifts,ps_dict,ps_method,adj_score_thre
 			#print(key)
 			#print(scoreadj_dict[key])
 			newps.append(ps_dict[key])
-			newheaders.append(ps_method+'/'+key)
-
+			newheaders.append(ps_method+'/'+key)		
 	newps=np.array(newps)
+	print(newps)
 	return (newps,newheaders)
 
 def make_dataframe(metabolites,cas,scoreadj_dict,score_dict,ps_dict,allmethod,source_dir):
@@ -127,16 +127,15 @@ def make_dataframe(metabolites,cas,scoreadj_dict,score_dict,ps_dict,allmethod,so
 	#df.to_csv(source_dir+'/df_'+allmethod+'.tsv',sep='\t')	
 	return df
 
-def main(z_score_threshold,adj_score_threshold,redo_flag):   
+def main(dirs,z_score_threshold,adj_score_threshold,redo_flag):   
+
 	print("\nThe threshold z-score for filtering is:",z_score_threshold,"\nThe threshold adjusted score for filtering is:",adj_score_threshold,"\n")
-	dirs=[]
-	dirs=glob.glob('ps.*')
+	print(dirs)
 	source_dir=os.getcwd() 
 	if redo_flag:
 		Redo(source_dir)
 	sigtag = '.sig'
-	dirs=[x for x in dirs if x[-len(sigtag):]!=sigtag] ## changed
-	print(dirs)
+	dirs=[x for x in dirs if x[-len(sigtag):]!=sigtag] 
 	if len(dirs)>0:
 		bestMatchesDF=pd.DataFrame()
 		for idir in range(len(dirs)):
@@ -243,7 +242,9 @@ if __name__ == '__main__':
 	parser.add_option('-z','--zscore',dest='z_score_threshold',type='float',default=4)
 	parser.add_option('-s','--adjscore',dest='adj_score_threshold',type='float',default=2)
 	(options, args) = parser.parse_args()
-	main(options.z_score_threshold,options.adj_score_threshold,options.redo_flag)
+	dirs=[]
+	dirs=glob.glob('ps.*')
+	main(dirs,options.z_score_threshold,options.adj_score_threshold,options.redo_flag)
 
 
 
