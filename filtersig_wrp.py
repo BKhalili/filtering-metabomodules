@@ -114,10 +114,13 @@ def make_dataframe(metabolites,cas,scoreadj_dict,score_dict,ps_dict,allmethod,so
 	#df.to_csv(source_dir+'/df_'+allmethod+'.tsv',sep='\t')	
 	return df
 
-def main(inputdir,z_score_threshold,adj_score_threshold):   
+def main(inputdir,z_score_threshold,adj_score_threshold,redo_flag):   
 	output_dir=0
 	dirs=[]
-	dirs=glob.glob(inputdir+'/ps.*')
+	ps_dir=inputdir
+	if redo_flag:
+		ps_dir=inputdir+'/original/'
+	dirs=glob.glob(ps_dir+'/ps.*')
 	print("\nThe threshold z-score for filtering is:",z_score_threshold,"\nThe threshold adjusted score for filtering is:",adj_score_threshold,"\n")
 	#print(dirs) 
 	sigtag = '.sig'
@@ -188,7 +191,7 @@ def main(inputdir,z_score_threshold,adj_score_threshold):
 				(newps,newheaders)=make_newps(deepcopy(scoreadj_dict),score_dict,shifts,ps_dict,ps_method,adj_score_threshold)
 				if len(newps)>1:    # saving the new pseudospectrum file containing all the pseudospectra that have significant metablite matches 
 					newps_df=pd.DataFrame(np.array(newps).transpose())
-					output_dir=dirs[idir].rsplit('/',1)[0]+'/z_score_TH_'+'%0.2f'%z_score_threshold+'_adj_score_TH_'+'%0.2f'%adj_score_threshold
+					output_dir=inputdir+'/z_score_TH_'+'%0.2f'%z_score_threshold+'_adj_score_TH_'+'%0.2f'%adj_score_threshold
 					newps_dir=output_dir+'/'+dirs[idir].rsplit('/',1)[1]+sigtag+'/' 
 					#print(newps_dir)
 					if not os.path.exists(newps_dir):
@@ -199,9 +202,10 @@ def main(inputdir,z_score_threshold,adj_score_threshold):
 						shutil.copy('description.tsv',newps_dir+'/description.tsv')
 				else:
 					print('didnt find any pseudospectrum in this ps folder')
-				if not os.path.exists(inputdir+'/original/'):
-					os.makedirs(inputdir+'/original/')
-				os.renames(dirs[idir],dirs[idir].rsplit('/',1)[0]+'/original/'+dirs[idir].rsplit('/',1)[1])
+				if redo_flag==False:
+					if not os.path.exists(inputdir+'/original/'):
+						os.makedirs(inputdir+'/original/')
+					os.renames(dirs[idir],dirs[idir].rsplit('/',1)[0]+'/original/'+dirs[idir].rsplit('/',1)[1])
 				################### END of MAKE NEWPS ########################
 
 				################### Create a dataframe for the table #######################
@@ -228,11 +232,12 @@ def main(inputdir,z_score_threshold,adj_score_threshold):
 if __name__ == '__main__':
 	usage = "usage: %prog [optional] arg"
 	parser = OptionParser(usage)
+	parser.add_option('-r','--redo',dest='redo_flag',default=False)
 	parser.add_option('-z','--zscore',dest='z_score_threshold',type='float',default=4.0)
 	parser.add_option('-s','--adjscore',dest='adj_score_threshold',type='float',default=2.0)
 	(options, args) = parser.parse_args()
 	inputdir=os.getcwd()
-	main(inputdir,options.z_score_threshold,options.adj_score_threshold)
+	main(inputdir,options.z_score_threshold,options.adj_score_threshold,options.redo_flag)
 
 
 
