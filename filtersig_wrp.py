@@ -127,24 +127,24 @@ def make_dataframe(metabolites,cas,scoreadj_dict,score_dict,ps_dict,allmethod,so
 	#df.to_csv(source_dir+'/df_'+allmethod+'.tsv',sep='\t')	
 	return df
 
-def main(z_score_threshold,adj_score_threshold,redo_flag):   
+def main(inputdir,z_score_threshold,adj_score_threshold,redo_flag):   
 	dirs=[]
-	dirs=glob.glob('ps.*')
+	dirs=glob.glob(inputdir+'/ps.*')
 	print("\nThe threshold z-score for filtering is:",z_score_threshold,"\nThe threshold adjusted score for filtering is:",adj_score_threshold,"\n")
-	print(dirs)
-	source_dir=os.getcwd() 
+	#print(dirs) 
 	if redo_flag:
-		Redo(source_dir)
+		Redo(inputdir)
 	sigtag = '.sig'
 	dirs=[x for x in dirs if x[-len(sigtag):]!=sigtag] 
 	if len(dirs)>0:
 		bestMatchesDF=pd.DataFrame()
 		for idir in range(len(dirs)):
-			new_dir=os.path.join(source_dir,dirs[idir])
-			os.chdir(new_dir)
+			print(dirs[idir])
+			#new_dir=os.path.join(source_dir,dirs[idir])
+			os.chdir(dirs[idir])
 			print("----------Current directory------------")
 			print(os.getcwd())
-			allmethod=dirs[idir].split('.',1)[1]
+			allmethod=dirs[idir].split('.',2)[1]
 			ps_file=score_file=scoreadj_file=param_file=casname_file=desc_file=tags_file=None
 			for directories, folders, files in os.walk('./'):
 				for file in files:
@@ -202,18 +202,18 @@ def main(z_score_threshold,adj_score_threshold,redo_flag):
 				(newps,newheaders)=make_newps(deepcopy(scoreadj_dict),score_dict,shifts,ps_dict,ps_method,adj_score_threshold)
 				if len(newps)>1:    # saving the new pseudospectrum file containing all the pseudospectra that have significant metablite matches 
 					newps_df=pd.DataFrame(np.array(newps).transpose())
-					outdir=source_dir+'/'+dirs[idir].rsplit('/',1)[0]+sigtag+'/' ## changed
-					if not os.path.exists(outdir):
-						os.makedirs(outdir)
-					newps_df.to_csv(outdir+'/'+dirs[idir].rsplit('/',1)[0]+'.pseudospectrum.tsv',index=False,header=newheaders,sep='\t') ## changed
-					shutil.copy(new_dir+'/parameters.in.tsv',outdir+'/parameters.in.tsv')
+					newps_dir=dirs[idir]+sigtag+'/' 
+					if not os.path.exists(newps_dir):
+						os.makedirs(newps_dir)
+					newps_df.to_csv(newps_dir+'/'+dirs[idir].rsplit('/',1)[1]+'.pseudospectrum.tsv',index=False,header=newheaders,sep='\t') ## changed
+					shutil.copy('parameters.in.tsv',newps_dir+'/parameters.in.tsv')
 					if desc_file is not None:
-						shutil.copy(new_dir+'/description.tsv',outdir+'/description.tsv')
+						shutil.copy('description.tsv',newps_dir+'/description.tsv')
 				else:
 					print('didnt find any pseudospectrum in this ps folder')
-				if not os.path.exists(source_dir+'/original/'):
-					os.makedirs(source_dir+'/original/')
-				os.renames(source_dir+'/'+dirs[idir],source_dir+'/original/'+dirs[idir])
+				if not os.path.exists(inputdir+'/original/'):
+					os.makedirs(inputdir+'/original/')
+				os.renames(dirs[idir],dirs[idir].rsplit('/',1)[0]+'/original/'+dirs[idir].rsplit('/',1)[1])
 				################### END of MAKE NEWPS ########################
 
 				################### Create a dataframe for the table #######################
@@ -223,7 +223,7 @@ def main(z_score_threshold,adj_score_threshold,redo_flag):
 				for i in range(len(cas)):
 					casname_flag=np.logical_not(casnames[:,0]!=cas[i]) 
 					metabolites.append(casnames[casname_flag,1][0])
-				df=make_dataframe(metabolites,cas,scoreadj_dict,score_dict,ps_dict,allmethod,source_dir)
+				df=make_dataframe(metabolites,cas,scoreadj_dict,score_dict,ps_dict,allmethod,inputdir)
 				bestMatchesDF = pd.concat([bestMatchesDF, df.set_index('metabolites')], axis=1, sort=False)
 
 		bestMatchesDF['sum']=bestMatchesDF.fillna(0).sum(axis=1,numeric_only=True)
@@ -231,7 +231,7 @@ def main(z_score_threshold,adj_score_threshold,redo_flag):
 		bestMatchesDF.drop(columns=['sum'],inplace=True)
 		cols=bestMatchesDF._get_numeric_data().columns
 		bestMatchesDF = bestMatchesDF[(bestMatchesDF[cols]>=adj_score_threshold).any(axis=1)]
-		bestMatchesDF.to_csv(source_dir+'/MatchesTable.tsv',sep='\t')
+		bestMatchesDF.to_csv(inputdir+'/MatchesTable.tsv',sep='\t')
 	else:
 		print('can not find folders starting with ps.')
 
@@ -243,7 +243,8 @@ if __name__ == '__main__':
 	parser.add_option('-z','--zscore',dest='z_score_threshold',type='float',default=4)
 	parser.add_option('-s','--adjscore',dest='adj_score_threshold',type='float',default=2)
 	(options, args) = parser.parse_args()
-	main(options.z_score_threshold,options.adj_score_threshold,options.redo_flag)
+	inputdir=os.getcwd()
+	main(inputdir,options.z_score_threshold,options.adj_score_threshold,options.redo_flag)
 
 
 
