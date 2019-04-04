@@ -15,20 +15,6 @@ from optparse import OptionParser
 from collections import OrderedDict
 from scipy import stats
 
-def Redo(source_dir):
-	if (len(glob.glob('original'))>0):
-		sig_dirs=glob.glob('*.sig')
-		for items in sig_dirs:
-			shutil.rmtree(source_dir+'/'+items)
-		org_dir=source_dir+'/original/'
-		print(os.listdir(org_dir))
-		for items in os.listdir(org_dir):
-			print(org_dir+items)
-			print(source_dir+'/'+items)
-			os.renames(org_dir+items,source_dir+'/'+items)
-	else:
-		print('original directory doesnt exist')
-	sys.exit()
 def make_newps(scoreadj_dict,scores_dict,shifts,ps_dict,ps_method,adj_score_threshold):
 	####### 1. if the max scoreadj for the pseudospetra is above adj_score_threshold with finite metabomatching score add to scoreadj dict
 	scoreadjDict={key:scoreadj_dict[key][i] for key in scoreadj_dict for i in range(len(scoreadj_dict[key])) if scoreadj_dict[key][i]>=adj_score_threshold and np.isfinite(scores_dict[key][i])}
@@ -127,13 +113,11 @@ def make_dataframe(metabolites,cas,scoreadj_dict,score_dict,ps_dict,allmethod,so
 	#df.to_csv(source_dir+'/df_'+allmethod+'.tsv',sep='\t')	
 	return df
 
-def main(inputdir,z_score_threshold,adj_score_threshold,redo_flag):   
+def main(inputdir,z_score_threshold,adj_score_threshold):   
 	dirs=[]
 	dirs=glob.glob(inputdir+'/ps.*')
 	print("\nThe threshold z-score for filtering is:",z_score_threshold,"\nThe threshold adjusted score for filtering is:",adj_score_threshold,"\n")
 	#print(dirs) 
-	if redo_flag:
-		Redo(inputdir)
 	sigtag = '.sig'
 	dirs=[x for x in dirs if x[-len(sigtag):]!=sigtag] 
 	if len(dirs)>0:
@@ -202,7 +186,9 @@ def main(inputdir,z_score_threshold,adj_score_threshold,redo_flag):
 				(newps,newheaders)=make_newps(deepcopy(scoreadj_dict),score_dict,shifts,ps_dict,ps_method,adj_score_threshold)
 				if len(newps)>1:    # saving the new pseudospectrum file containing all the pseudospectra that have significant metablite matches 
 					newps_df=pd.DataFrame(np.array(newps).transpose())
-					newps_dir=dirs[idir]+sigtag+'/' 
+					output_dir=dirs[idir].rsplit('/',1)[0]+'/z_score_TH_'+'%0.2f'%z_score_threshold+'_adj_score_TH_'+'%0.2f'%adj_score_threshold
+					newps_dir=output_dir+'/'+dirs[idir].rsplit('/',1)[1]+sigtag+'/' 
+					#print(newps_dir)
 					if not os.path.exists(newps_dir):
 						os.makedirs(newps_dir)
 					newps_df.to_csv(newps_dir+'/'+dirs[idir].rsplit('/',1)[1]+'.pseudospectrum.tsv',index=False,header=newheaders,sep='\t') ## changed
@@ -223,7 +209,7 @@ def main(inputdir,z_score_threshold,adj_score_threshold,redo_flag):
 				for i in range(len(cas)):
 					casname_flag=np.logical_not(casnames[:,0]!=cas[i]) 
 					metabolites.append(casnames[casname_flag,1][0])
-				df=make_dataframe(metabolites,cas,scoreadj_dict,score_dict,ps_dict,allmethod,inputdir)
+				df=make_dataframe(metabolites,cas,scoreadj_dict,score_dict,ps_dict,allmethod,output_dir)
 				bestMatchesDF = pd.concat([bestMatchesDF, df.set_index('metabolites')], axis=1, sort=False)
 
 		bestMatchesDF['sum']=bestMatchesDF.fillna(0).sum(axis=1,numeric_only=True)
@@ -231,7 +217,7 @@ def main(inputdir,z_score_threshold,adj_score_threshold,redo_flag):
 		bestMatchesDF.drop(columns=['sum'],inplace=True)
 		cols=bestMatchesDF._get_numeric_data().columns
 		bestMatchesDF = bestMatchesDF[(bestMatchesDF[cols]>=adj_score_threshold).any(axis=1)]
-		bestMatchesDF.to_csv(inputdir+'/MatchesTable.tsv',sep='\t')
+		bestMatchesDF.to_csv(output_dir+'/MatchesTable.tsv',sep='\t')
 	else:
 		print('can not find folders starting with ps.')
 
@@ -239,12 +225,11 @@ def main(inputdir,z_score_threshold,adj_score_threshold,redo_flag):
 if __name__ == '__main__':
 	usage = "usage: %prog [optional] arg"
 	parser = OptionParser(usage)
-	parser.add_option('-r','--redo',dest='redo_flag',default=False)
-	parser.add_option('-z','--zscore',dest='z_score_threshold',type='float',default=4)
-	parser.add_option('-s','--adjscore',dest='adj_score_threshold',type='float',default=2)
+	parser.add_option('-z','--zscore',dest='z_score_threshold',type='float',default=4.0)
+	parser.add_option('-s','--adjscore',dest='adj_score_threshold',type='float',default=2.0)
 	(options, args) = parser.parse_args()
 	inputdir=os.getcwd()
-	main(inputdir,options.z_score_threshold,options.adj_score_threshold,options.redo_flag)
+	main(inputdir,options.z_score_threshold,options.adj_score_threshold)
 
 
 
