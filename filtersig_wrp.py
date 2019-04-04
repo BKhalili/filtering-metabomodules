@@ -15,7 +15,6 @@ from optparse import OptionParser
 from collections import OrderedDict
 from scipy import stats
 
-output_dir=[]
 
 def make_newps(scoreadj_dict,scores_dict,shifts,ps_dict,ps_method,adj_score_threshold):
 	####### 1. if the max scoreadj for the pseudospetra is above adj_score_threshold with finite metabomatching score add to scoreadj dict
@@ -116,6 +115,7 @@ def make_dataframe(metabolites,cas,scoreadj_dict,score_dict,ps_dict,allmethod,so
 	return df
 
 def main(inputdir,z_score_threshold,adj_score_threshold):   
+	output_dir=0
 	dirs=[]
 	dirs=glob.glob(inputdir+'/ps.*')
 	print("\nThe threshold z-score for filtering is:",z_score_threshold,"\nThe threshold adjusted score for filtering is:",adj_score_threshold,"\n")
@@ -222,7 +222,7 @@ def main(inputdir,z_score_threshold,adj_score_threshold):
 		bestMatchesDF.to_csv(output_dir+'/MatchesTable.tsv',sep='\t')
 	else:
 		print('can not find folders starting with ps.')
-return output_dir
+	return output_dir
 
 
 if __name__ == '__main__':
