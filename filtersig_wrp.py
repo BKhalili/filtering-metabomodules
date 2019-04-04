@@ -222,7 +222,7 @@ def main(inputdir,z_score_threshold,adj_score_threshold):
 		bestMatchesDF.to_csv(output_dir+'/MatchesTable.tsv',sep='\t')
 	else:
 		print('can not find folders starting with ps.')
-	return output_dir
+	return output_dir.rsplit('/',1)[1]
 
 
 if __name__ == '__main__':
