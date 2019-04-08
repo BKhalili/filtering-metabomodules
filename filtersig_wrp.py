@@ -118,8 +118,6 @@ def main(inputdir,z_score_threshold,adj_score_threshold,redo_flag):
 	output_dir=0
 	dirs=[]
 	ps_dir=inputdir
-	if redo_flag:
-		ps_dir=inputdir+'/original/'
 	dirs=glob.glob(ps_dir+'/ps.*')
 	print("\nThe threshold z-score for filtering is:",z_score_threshold,"\nThe threshold adjusted score for filtering is:",adj_score_threshold,"\n")
 	#print(dirs) 
