@@ -221,7 +221,8 @@ def main(inputdir,z_score_threshold,adj_score_threshold,redo_flag):
 		bestMatchesDF.drop(columns=['sum'],inplace=True)
 		cols=bestMatchesDF._get_numeric_data().columns
 		bestMatchesDF = bestMatchesDF[(bestMatchesDF[cols]>=adj_score_threshold).any(axis=1)]
-		bestMatchesDF.to_csv(output_dir+'/MatchesTable.tsv',sep='\t')
+		if len(newps)>1:
+			bestMatchesDF.to_csv(output_dir+'/MatchesTable.tsv',sep='\t')
 	else:
 		print('can not find folders starting with ps.')
 	return output_dir.rsplit('/',1)[1]
