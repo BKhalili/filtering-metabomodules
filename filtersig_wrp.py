@@ -115,7 +115,7 @@ def make_dataframe(metabolites,cas,scoreadj_dict,score_dict,ps_dict,allmethod,so
 	return df
 
 def main(inputdir,z_score_threshold,adj_score_threshold,redo_flag):   
-	output_dir=0
+	output_dir=os.getcwd()
 	dirs=[]
 	ps_dir=inputdir
 	dirs=glob.glob(ps_dir+'/ps.*')
